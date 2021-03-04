@@ -1,67 +1,14 @@
 class Navigation extends HTMLElement {
 
-    ACCOUNT = 0
-    RESERVATION = 1
-    EVENTS = 2
-    
-    SELECTEDVIEW = 0;
+    activeview = '';
 
-    clickAccount() {
-        console.log('click account');
+    getMobileView(){
+        var sr = this.shadowRoot;
 
-        var accountimg = this.accountsbutton.childNodes[0];
-        accountimg.src = './images/account-selected.svg';
+         // I don't like this being hard coded, but have stuggled to find a dynamic way for exampe: .childNodes.item("mobileview");
 
-        var resimg = this.reservationsbutton.childNodes[0];
-        resimg.src = './images/reservation-deselected.svg';
-
-        var eventimg = this.eventsbutton.childNodes[0];
-        eventimg.src = './images/eventlist-deselected.svg';
-
-        this.SELECTEDVIEW = this.ACCOUNT;
-
-        var event = new Event('build');
-        this.dispatchEvent(event);
-
-        var mobileview = document.getElementById('mobileview');
-        mobileview.innerHTML = "<account-element></account-element>"
-    }
-
-    clickReservation() {
-
-        var accountimg = this.accountsbutton.childNodes[0];
-        accountimg.src = './images/account-deselected.svg';
-
-        var resimg = this.reservationsbutton.childNodes[0];
-        resimg.src = './images/reservation-selected.svg';
-
-        var eventimg = this.eventsbutton.childNodes[0];
-        eventimg.src = './images/eventlist-deselected.svg';
-
-        console.log('click reservation');
-
-        this.SELECTEDVIEW = this.RESERVATION;
-
-        var mobileview = document.getElementById('mobileview');
-        mobileview.innerHTML = "<reservations-element></reservations-element>"
-    }
-
-    clickEvents() {
-        console.log('click events');
-
-        var accountimg = this.accountsbutton.childNodes[0];
-        accountimg.src = './images/account-deselected.svg';
-
-        var resimg = this.reservationsbutton.childNodes[0];
-        resimg.src = './images/reservation-deselected.svg';
-
-        var eventimg = this.eventsbutton.childNodes[0];
-        eventimg.src = './images/eventlist-selected.svg';
-
-        this.SELECTEDVIEW = this.EVENTS;
-
-        var mobileview = document.getElementById('mobileview');
-        mobileview.innerHTML = "<events-element></events-element>"
+        var mobileview = sr.host.parentElement.childNodes[3];
+        return mobileview;
     }
 
     constructor() {
@@ -74,23 +21,42 @@ class Navigation extends HTMLElement {
                 mode: 'open'
             })
             .appendChild(templateContent.cloneNode(true));
+    }
 
+    setAllButtonsDisabled(){
         var sr = this.shadowRoot;
+        this.buttonRow = sr.getElementById('buttonrow');
 
-        this.accountsbutton = sr.getElementById('accountbutton');
-        this.reservationsbutton = sr.getElementById('reservationsbutton');
-        this.eventsbutton = sr.getElementById('eventsbutton');
+        const buttonlist = Array.from(this.buttonRow.children);
 
-        this.accountsbutton.addEventListener('click', e => {
-            this.clickAccount();
-        });
 
-        this.reservationsbutton.addEventListener('click', e => {
-            this.clickReservation();
-        });
+        buttonlist.forEach(function(node){
+            node.setDisabled();
+        })
+    }
 
-        this.eventsbutton.addEventListener('click', e => {
-            this.clickEvents();
+    connectedCallback(){
+        var sr = this.shadowRoot;
+        this.buttonRow = sr.getElementById('buttonrow');
+
+        var navelement = this;
+
+        this.buttonRow.addEventListener('NAV', e => {
+
+            console.log(e)
+
+            var id = e.detail.eventData.id;
+
+            // console.log('HOMESCREEN RECIEVED EVENT FROM NAV BUTTON: ' + id.toLocaleUpperCase());
+
+            this.setAllButtonsDisabled();
+
+            var button = sr.getElementById(id);
+            button.setEnabled();
+            navelement.activeview = id;
+
+            var mobileview = this.getMobileView();
+            mobileview.innerHTML = "<" + id + "-element></" + id +"-element>";
         });
     }
 }

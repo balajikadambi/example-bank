@@ -1,51 +1,59 @@
 class Loyalty {
 
+    mobileview;
+
     constructor() {
-        console.log('initializing loyalty app');
-        // this.details = details;
+
+        console.log('INITIALIZING LOYALTY APP');      
+
+        var phoneview = document.getElementById("phoneview");
+        this.mobileview = phoneview.getMobileView();
 
         // if cookie exists - then user is logged in
         //  navigate to account section
-        if (this.getCookie('access_token') != "" && this.getCookie('id_token') != "") {
-            let id_object = this.parseJwt(this.getCookie('id_token'))
-            console.log(id_object)
 
-            var accountinfo = {
-                firstname: id_object.given_name,
-                surname: id_object.family_name
-            }
+        // if(this.mode=='INTEGRATED'){
+        //     if (this.getCookie('access_token') != "" && this.getCookie('id_token') != "") {
+        //         let id_object = this.parseJwt(this.getCookie('id_token'))
+        //         console.log(id_object)
 
-            var fullname = accountinfo.firstname + ' ' + accountinfo.surname
+        //         var accountinfo = {
+        //             firstname: id_object.given_name,
+        //             surname: id_object.family_name
+        //         }
 
-            var mobileview = document.getElementById("mobileview");
-            mobileview.innerHTML = "";
+        //         var fullname = accountinfo.firstname + ' ' + accountinfo.surname
 
-            let element = document.createElement('account-element')
-            element.setAttribute('name', fullname)
-            mobileview.appendChild(element)
+        //         this.mobileview.innerHTML = "";
 
-            localStorage.setItem("loyaltyname", fullname);
+        //         let element = document.createElement('transactions-element')
+        //         element.setAttribute('name', fullname);
+        //         element.setAttribute('mode', this.mode);
+        //         this.mobileview.appendChild(element); 
 
-            var nav = document.getElementById("mobilenavigation");
-            nav.style.display = "flex";
-        }
+        //         localStorage.setItem("loyaltyname", fullname);
+        //         console.log(phoneview)
+        //         phoneview.showNavigation();
+        //     }
+        // }
     }
 
     signup() {
         console.log('loyalty.signup');
 
-        var mobileview = document.getElementById("mobileview");
-        mobileview.innerHTML = "";
+        // var phoneview = document.getElementById("phoneview");
+        // var mobileview = phoneview.getMobileView();
+        this.mobileview.innerHTML = "";
 
         var element = document.createElement('login-element');
-
         getRandomUser((firstname, surname, password, email) => {
             element.setAttribute('firstname', firstname);
             element.setAttribute('surname', surname);
             element.setAttribute('password', password);
-            element.setAttribute('username', email);
+            element.setAttribute('email', email);
+            element.setAttribute('username', firstname + surname);
 
-            mobileview.appendChild(element);
+            this.mobileview.appendChild(element);
         })
 
         /* same as mobileview.innerHTML =
@@ -79,4 +87,5 @@ class Loyalty {
       }
 }
 
+// var loyalty = new Loyalty();
 var loyalty = new Loyalty();

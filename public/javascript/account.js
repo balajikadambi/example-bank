@@ -1,13 +1,5 @@
 class Account extends HTMLElement {
 
-    static get observedAttributes() {
-        return ['events', 'points'];
-    }
-
-    clickaccount() {
-        console.log('this is a test');
-    }
-
     events = ""
     points = ""
     name = ""
@@ -16,6 +8,7 @@ class Account extends HTMLElement {
         // Always call super first in constructor
         super();
 
+        console.log('INITIALIZED ACCOUNT VIEW');
         var customElement = this;
 
         let template = document.getElementById('accountview');
@@ -37,7 +30,7 @@ class Account extends HTMLElement {
 
         let deleteButton = sr.getElementById("deleteAccountButton")
         deleteButton.addEventListener("click", e => {
-            this.delete();
+                this.delete();
         })
     }
 
@@ -49,17 +42,19 @@ class Account extends HTMLElement {
         // clear local storage
         localStorage.clear()
 
-        var mobileview = document.getElementById("mobileview");
+        var phoneview = document.getElementById("phoneview");
+        var mobileview = phoneview.getMobileView();
         mobileview.innerHTML = "";
         var welcome = document.createElement('welcome-element')
+        welcome.setAttribute('mode','INTEGRATED')
         mobileview.appendChild(welcome)
 
-        var nav = document.getElementById("mobilenavigation");
-        nav.style.display = "none";
+        phoneview.hideNavigation();
     }
 
     delete() {
-        let mobileview = document.getElementById("mobileview");
+        let phoneview = document.getElementById("phoneview");
+        let mobileview = phoneview.getMobileView();
         mobileview.innerHTML = "";
         let element = document.createElement('loading-spinner-element');
         element.setAttribute("status", "Deleting account...")
@@ -83,8 +78,9 @@ class Account extends HTMLElement {
 
         /* where to make a data call for points/events */
 
-        this.events = customElement.getAttribute('events')
-        this.points = customElement.getAttribute('points')
+        this.mode = customElement.getAttribute('mode');
+        this.events = customElement.getAttribute('events');
+        this.points = customElement.getAttribute('points');
 
         if (this.events == null) {
             this.events = '-'
@@ -98,48 +94,12 @@ class Account extends HTMLElement {
         if(this.name == null){
             this.name = "";
         }else{
-            console.log('name parameter passed in')
+            console.log('SETTING NAME')
         }
 
-        this.eventsattended = sr.getElementById('eventsattended');
-        this.eventsattended.innerHTML = this.events;
-        this.pointearned = sr.getElementById('pointearned');
-        this.pointearned.innerHTML = this.points;
+        
         this.nameelement = sr.getElementById('name');
         this.nameelement.innerHTML = this.name;
-
-        getUserStats(loyalty.getCookie('access_token'), (err, eventCount, pointsEarned) => {
-            // if user is not registered (user profile is not in database)
-            // create one for user
-            if (err == 'User is not registered') {
-                let mobileview = document.getElementById("mobileview");
-                mobileview.innerHTML = "";
-                let element = document.createElement('loading-spinner-element');
-                element.setAttribute("status", "User is marked for deletion...")
-                mobileview.appendChild(element)
-
-                setTimeout(() => {
-                    element.setAttribute("status", "Logging out...")
-                    setTimeout(() => {
-                        this.logout()
-                    }, 2500)
-                }, 2000)
-            }
-            if (eventCount != null) customElement.setAttribute('events', eventCount)
-            if (pointsEarned != null) customElement.setAttribute('points', pointsEarned)
-        })
-    }
-
-    attributeChangedCallback(name, oldValue, newValue) {
-        console.log('account attribute changed callback')
-
-        if (name == 'events') {
-            console.log('events changed')
-            this.shadowRoot.getElementById('eventsattended').innerHTML = newValue
-        } else if (name == 'points') {
-            console.log('points changed')
-            this.shadowRoot.getElementById('pointearned').innerHTML = newValue
-        }
     }
 }
 

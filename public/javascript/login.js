@@ -17,13 +17,15 @@ class Login extends HTMLElement {
         console.log('login.createAccount');
 
         /* where to make a data call for points/events */
+        let sr = this.shadowRoot
+        var firstname = sr.getElementById('firstname').innerHTML;
+        var surname = sr.getElementById('surname').innerHTML;
+        var email = sr.getElementById('email').innerHTML;
 
-        var firstname = this.getAttribute('firstname');
-        var surname = this.getAttribute('surname');
-        var password = this.getAttribute('password')
-        var email = this.getAttribute('username')
-
-        var mobileview = document.getElementById("mobileview");
+        var phoneview = document.getElementById("phoneview");
+        var mobileview = phoneview.getMobileView();
+        this.MODE = this.getAttribute('mode')
+        let previousMobileView = mobileview.innerHTML
         mobileview.innerHTML = "";
 
         // create loading spinner first
@@ -31,7 +33,7 @@ class Login extends HTMLElement {
         element.setAttribute("status", "Creating account...")
         mobileview.appendChild(element)
 
-        createAccountAppId(firstname, surname, password, email, (json) => {
+        createAccountAppId(firstname, surname, firstname + "" + surname, email, (json) => {
             console.log(json)
             if (json.status == "user created successfully") {
 
@@ -44,18 +46,23 @@ class Login extends HTMLElement {
                     createProfile(jsonWithTokens.access_token, success => {
                         // then show account view
                         if (success) {
-                            this.createAccountView(firstname, surname)
+                            this.createTransactionsView(firstname, surname)
                         }
                         // else edge case when failed to create user profile
                     })
                     // edge case when unable to sign in
                 })
+            } else { 
+                // edge case when failed to register with app id
+                element.setAttribute("status", json.message)
+                setTimeout(() => {
+                    mobileview.innerHTML = previousMobileView
+                }, 2000)
             }
-            // edge case when failed to register with app id
         })
     }
 
-    createAccountView(firstname, surname) {
+    createTransactionsView(firstname, surname) {
         var accountinfo ={
             firstname:firstname,
             surname: surname
@@ -63,16 +70,17 @@ class Login extends HTMLElement {
 
         var fullname = accountinfo.firstname + ' ' + accountinfo.surname
 
-        var mobileview = document.getElementById("mobileview");
+        var phoneview = document.getElementById("phoneview");
+        var mobileview = phoneview.getMobileView();
+        let element = document.createElement('transactions-element')
+        element.setAttribute('name', fullname);
+        element.setAttribute('mode', this.MODE);
         mobileview.innerHTML = "";
-        mobileview.innerHTML = '<account-element name="' + fullname + '"></account-element>'
+        mobileview.appendChild(element);
 
-        // localStorage.setItem("loyaltyevents", accountinfo.events);
-        // localStorage.setItem("loyaltypoints", accountinfo.points);
         localStorage.setItem("loyaltyname", fullname);
 
-        var nav = document.getElementById("mobilenavigation");
-        nav.style.display = "flex";
+        phoneview.showNavigation();
     }
 
     constructor() {
@@ -103,7 +111,7 @@ class Login extends HTMLElement {
 
     connectedCallback(){
 
-        var ids = ['firstname', 'surname', 'password', 'username'];
+        var ids = ['firstname', 'surname', 'password', 'username', 'email'];
 
         var sr = this.shadowRoot;
         var customElement = this;
@@ -112,6 +120,21 @@ class Login extends HTMLElement {
             var element = sr.getElementById(id);
             var data =  customElement.getAttribute(id);
             element.innerHTML = data;
+        })
+        let firstnameDiv = sr.getElementById('firstname')
+        let surnameDiv = sr.getElementById('surname')
+        let usernameDiv = sr.getElementById('username')
+        let passwordDiv = sr.getElementById('password')
+        let emailDiv = sr.getElementById('email')
+        firstnameDiv.addEventListener('input', function () {
+            usernameDiv.innerHTML = this.innerHTML + surnameDiv.innerHTML
+            passwordDiv.innerHTML = this.innerHTML.replace(/./g,'*') + surnameDiv.innerHTML.replace(/./g,'*')
+            emailDiv.innerHTML = this.innerHTML + "@" + surnameDiv.innerHTML + ".org"
+        })
+        surnameDiv.addEventListener('input', function () {
+            usernameDiv.innerHTML = firstnameDiv.innerHTML + this.innerHTML
+            passwordDiv.innerHTML = firstnameDiv.innerHTML.replace(/./g,'*') + this.innerHTML.replace(/./g,'*')
+            emailDiv.innerHTML = firstnameDiv.innerHTML + "@" + this.innerHTML + ".org"
         })
       }
 }

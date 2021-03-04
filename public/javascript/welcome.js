@@ -1,52 +1,69 @@
 class Welcome extends HTMLElement {
 
     constructor() {
-        // Always call super first in constructor
-        super();
+        
+        super();        
 
-        // write element functionality in here
-
-        // var shadow = this.attachShadow({
-        //     mode: 'open'
-        // });
-
-        // Create spans
-        // var wrapper = document.createElement('span');
-        // wrapper.setAttribute('class', 'wrapper');
-
-        // wrapper.innerHTML = view;
-        // Take attribute content and put it inside the info span
-        // var text = this.getAttribute('text');
-        // info.textContent = text;
+        console.log('INITIALIZING WELCOME VIEW');
 
         let template = document.getElementById('welcomeview');
         let templateContent = template.content;
 
         const shadow = this.attachShadow({mode: 'open'})
           .appendChild(templateContent.cloneNode(true));
+       
+    }
 
-        // shadow.appendChild(wrapper);
-        // wrapper.appendChild(info);
+    connectedCallback() {
+
         let sr = this.shadowRoot;
 
         let selectUserInput = sr.getElementById("usernameselect")
         let signinButton = sr.getElementById("signin")
 
-        getAllUsers((users) => {
-            users.forEach(user => {
-                var option = document.createElement("option");
-                option.text = user
-                selectUserInput.add(option)
-            });
-        })
+        var phoneview = document.getElementById("phoneview");
+        var mobileview = phoneview.getMobileView();
+
+        if (loyalty.getCookie('access_token') != "" && loyalty.getCookie('id_token') != "") {
+            let id_object = loyalty.parseJwt(loyalty.getCookie('id_token'))
+            console.log(id_object)
+
+            var accountinfo = {
+                firstname: id_object.given_name,
+                surname: id_object.family_name
+            }
+
+            var fullname = accountinfo.firstname + ' ' + accountinfo.surname
+
+            mobileview.innerHTML = "";
+
+            let element = document.createElement('transactions-element')
+            element.setAttribute('name', fullname);
+            mobileview.appendChild(element); 
+
+            localStorage.setItem("loyaltyname", fullname);
+
+            phoneview.showNavigation();
+        } else {
+            getAllUsers((users) => {
+                users.forEach(user => {
+                    var option = document.createElement("option");
+                    option.text = user
+                    selectUserInput.add(option)
+                });
+            })
+        }
 
         signinButton.addEventListener("click", e => {
             this.signin(selectUserInput.value, selectUserInput.value)
         })
     }
 
+
     signin(username, password) {
-        var mobileview = document.getElementById("mobileview");
+        let sr = this.shadowRoot;
+        
+        var mobileview = sr.host.parentElement;
         mobileview.innerHTML = "";
 
         // create loading spinner first
@@ -57,11 +74,29 @@ class Welcome extends HTMLElement {
         loginWithAppId(username, password, (jsonWebToken) => {
             // when login complete,
             // re-initialize app?
-            new Loyalty();
+            new Loyalty(this.mode);
+            let id_object = loyalty.parseJwt(jsonWebToken.id_token)
+            console.log(id_object)
+
+            var accountinfo = {
+                firstname: id_object.given_name,
+                surname: id_object.family_name
+            }
+
+            var fullname = accountinfo.firstname + ' ' + accountinfo.surname
+
+            mobileview.innerHTML = "";
+
+            let element = document.createElement('transactions-element')
+            element.setAttribute('name', fullname);
+            mobileview.appendChild(element);
+
+            localStorage.setItem("loyaltyname", fullname);
+
+            phoneview.showNavigation();
             // edge case when unable to sign in
         })
     }
-
 }
 
 try {
