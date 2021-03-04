@@ -5,7 +5,7 @@ In this pattern, we show how to deploy a microservice based back-end in OpenShif
 ## Introduction
 
 As people become more aware of data and concerned about their online privacy, regulations around the world have started requiring software projects to think about how customers' data is handled.  This pattern deploys a set of microservices to act as a back-end for a mobile bank application, such as those often used by businesses who want to better understand how people use their services by collecting data. Although inspired by regulations such GDPR (Europe's general data protection regulations), as this is not a real public facing application, we implement a few data privacy features as a way of demonstrating how one might go about building a privacy focused back-end in OpenShift 4.
-
+ 
 The GDPR standard defines requirements around what operations need to be available to users ("subjects"). However, GDPR is technology neutral, so it ends up being the responsibility of the implementors to build the architecture that implements the requirements. In addition, with the move toward microservice architectures and containerization, we have technology such as service mesh that may be useful in the context of a data privacy service.
 
 ## Included Components
